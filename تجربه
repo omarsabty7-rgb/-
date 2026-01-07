@@ -5,6 +5,8 @@ local Title = Instance.new("TextLabel")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
 -- // إعدادات القيم الافتراضية
 local AimbotEnabled = false
@@ -20,21 +22,18 @@ local FlySpeedValue = 100
 local SmoothnessValue = 0.1
 
 -- // إعداد الواجهة (UI Setup)
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15) -- أسود داكن جداً
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 MainFrame.Position = UDim2.new(0.5, -140, 0.5, -270)
 MainFrame.Size = UDim2.new(0, 280, 0, 540) 
 MainFrame.Active = true
 MainFrame.Draggable = true
 
-UICorner.CornerRadius = UDim.new(0, 10)
-UICorner.Parent = MainFrame
-
--- إطار خارجي أحمر فاتح
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
 local UIStroke = Instance.new("UIStroke", MainFrame)
 UIStroke.Color = Color3.fromRGB(220, 40, 40)
 UIStroke.Thickness = 1.5
@@ -42,18 +41,17 @@ UIStroke.Thickness = 1.5
 Title.Parent = MainFrame
 Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 Title.Size = UDim2.new(1, 0, 0, 45)
-Title.Text = "  ELITE HUB V7 | OFFICIAL"
+Title.Text = "  ELITE HUB V7 | TEAM CHECK"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 14
 Title.TextXAlignment = Enum.TextXAlignment.Left
-local TitleCorner = Instance.new("UICorner", Title)
+Instance.new("UICorner", Title)
 
--- // وظيفة إنشاء أزرار التشغيل
+-- // وظائف الإنشاء (Toggle & Input)
 local function CreateToggleButton(name, pos, callback, isFullWidth)
     local active = false
-    local btn = Instance.new("TextButton")
-    btn.Parent = MainFrame
+    local btn = Instance.new("TextButton", MainFrame)
     btn.Text = name .. ": [OFF]"
     btn.Position = pos
     btn.Size = isFullWidth and UDim2.new(0.9, 0, 0, 38) or UDim2.new(0.63, 0, 0, 38)
@@ -61,29 +59,22 @@ local function CreateToggleButton(name, pos, callback, isFullWidth)
     btn.TextColor3 = Color3.fromRGB(200, 200, 200)
     btn.Font = Enum.Font.GothamBold
     btn.TextSize = 10
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-
+    Instance.new("UICorner", btn)
     btn.MouseButton1Click:Connect(function()
         active = not active
         btn.Text = active and name .. ": [ON]" or name .. ": [OFF]"
         btn.BackgroundColor3 = active and Color3.fromRGB(220, 40, 40) or Color3.fromRGB(35, 35, 35)
-        btn.TextColor3 = active and Color3.new(1,1,1) or Color3.fromRGB(200, 200, 200)
         callback(active)
     end)
-    return btn
 end
 
--- // وظيفة إنشاء صناديق إدخال القيم
 local function CreateValueInput(pos, defaultValue, callback)
-    local input = Instance.new("TextBox")
-    input.Parent = MainFrame
+    local input = Instance.new("TextBox", MainFrame)
     input.Text = tostring(defaultValue)
     input.Position = pos
     input.Size = UDim2.new(0, 65, 0, 38)
     input.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    input.TextColor3 = Color3.fromRGB(255, 255, 255)
-    input.Font = Enum.Font.Code
-    input.TextSize = 14
+    input.TextColor3 = Color3.new(1,1,1)
     Instance.new("UICorner", input)
     input.FocusLost:Connect(function() callback(tonumber(input.Text) or 0) end)
 end
@@ -98,10 +89,9 @@ CreateValueInput(UDim2.new(0.71, 0, 0.20, 0), JumpPowerValue, function(v) JumpPo
 CreateToggleButton("FLY HACK", UDim2.new(0.05, 0, 0.28, 0), function(s) 
     Flying = s 
     NoclipEnabled = s 
-    local root = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if s and root then
         local bv = Instance.new("BodyVelocity", root)
-        bv.Name = "FlyVel"
         bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
         task.spawn(function()
             while Flying do
@@ -114,79 +104,30 @@ CreateToggleButton("FLY HACK", UDim2.new(0.05, 0, 0.28, 0), function(s)
                 bv.Velocity = move * FlySpeedValue
                 task.wait()
             end
-            if bv then bv:Destroy() end
+            bv:Destroy()
         end)
     end
 end)
 CreateValueInput(UDim2.new(0.71, 0, 0.28, 0), FlySpeedValue, function(v) FlySpeedValue = v end)
 
-CreateToggleButton("AIMBOT LOCK", UDim2.new(0.05, 0, 0.36, 0), function(s) AimbotEnabled = s end)
+CreateToggleButton("AIMBOT (ENEMIES)", UDim2.new(0.05, 0, 0.36, 0), function(s) AimbotEnabled = s end)
 CreateValueInput(UDim2.new(0.71, 0, 0.36, 0), SmoothnessValue, function(v) SmoothnessValue = v end)
 
-CreateToggleButton("SMART ESP (TEAM CHECK)", UDim2.new(0.05, 0, 0.44, 0), function(s) ESPEnabled = s end, true)
+CreateToggleButton("SMART ESP", UDim2.new(0.05, 0, 0.44, 0), function(s) ESPEnabled = s end, true)
 
--- // زر الديسكورد المطور (فتح مباشر + نسخ)
-local discordBtn = Instance.new("TextButton", MainFrame)
-discordBtn.Text = "JOIN DISCORD SERVER"
-discordBtn.Size = UDim2.new(0.9, 0, 0, 40)
-discordBtn.Position = UDim2.new(0.05, 0, 0.54, 0)
-discordBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
-discordBtn.TextColor3 = Color3.new(1,1,1)
-discordBtn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", discordBtn)
-
-discordBtn.MouseButton1Click:Connect(function()
-    setclipboard("https://discord.gg/yz5yADqe")
-    -- محاولة فتح الديسكورد للكمبيوتر
-    pcall(function()
-        local req = (syn and syn.request) or (http and http.request) or http_request
-        if req then
-            req({
-                Url = "http://127.0.0.1:6463/rpc?v=1",
-                Method = "POST",
-                Headers = {["Content-Type"] = "application/json", ["Origin"] = "https://discord.com"},
-                Body = HttpService:JSONEncode({cmd = "INVITE_BROWSER", args = {code = "yz5yADqe"}, nonce = HttpService:GenerateGUID(false)})
-            })
-        end
-    end)
-    discordBtn.Text = "LINK COPIED!"
-    task.wait(2)
-    discordBtn.Text = "JOIN DISCORD SERVER"
-end)
-
--- // البرمجة الخلفية (Logic Loops)
-RunService.Stepped:Connect(function()
-    for _, p in pairs(game.Players:GetPlayers()) do
-        if p ~= game.Players.LocalPlayer and p.Character then
-            local h = p.Character:FindFirstChild("ESPHighlight")
-            if ESPEnabled then
-                if not h then h = Instance.new("Highlight", p.Character); h.Name = "ESPHighlight" end
-                h.FillColor = (p.Team == game.Players.LocalPlayer.Team) and Color3.new(0,0,1) or Color3.new(1,0,0)
-            elseif h then h:Destroy() end
-        end
-    end
-end)
-
-RunService.Heartbeat:Connect(function()
-    local char = game.Players.LocalPlayer.Character
-    if char and char:FindFirstChild("Humanoid") then
-        if SpeedEnabled then char.Humanoid.WalkSpeed = WalkSpeedValue end
-        if JumpEnabled then char.Humanoid.JumpPower = JumpPowerValue; char.Humanoid.UseJumpPower = true end
-        if NoclipEnabled then
-            for _, v in pairs(char:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end
-        end
-    end
-end)
-
+-- // Aimbot Logic (With Team Check)
 RunService.RenderStepped:Connect(function()
     if AimbotEnabled then
         local target, closest = nil, 1000
-        for _, p in pairs(game.Players:GetPlayers()) do
-            if p ~= game.Players.LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                local pos, vis = workspace.CurrentCamera:WorldToViewportPoint(p.Character.HumanoidRootPart.Position)
-                if vis then
-                    local mag = (Vector2.new(pos.X, pos.Y) - UserInputService:GetMouseLocation()).Magnitude
-                    if mag < closest then target = p; closest = mag end
+        for _, p in pairs(Players:GetPlayers()) do
+            -- فحص: ليس أنا + لديه شخصية + ليس في فريقي (الأعداء فقط)
+            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                if p.Team ~= LocalPlayer.Team then 
+                    local pos, vis = workspace.CurrentCamera:WorldToViewportPoint(p.Character.HumanoidRootPart.Position)
+                    if vis then
+                        local mag = (Vector2.new(pos.X, pos.Y) - UserInputService:GetMouseLocation()).Magnitude
+                        if mag < closest then target = p; closest = mag end
+                    end
                 end
             end
         end
@@ -196,13 +137,43 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- // زر الإغلاق النهائي
+-- // ESP & Physics Loops
+RunService.Stepped:Connect(function()
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character then
+            local h = p.Character:FindFirstChild("ESPHighlight")
+            if ESPEnabled then
+                if not h then h = Instance.new("Highlight", p.Character); h.Name = "ESPHighlight" end
+                h.FillColor = (p.Team == LocalPlayer.Team) and Color3.new(0,0,1) or Color3.new(1,0,0)
+            elseif h then h:Destroy() end
+        end
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
+    local Hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+    if Hum then
+        if SpeedEnabled then Hum.WalkSpeed = WalkSpeedValue end
+        if JumpEnabled then Hum.JumpPower = JumpPowerValue; Hum.UseJumpPower = true end
+    end
+end)
+
+-- // Discord Button
+local disc = Instance.new("TextButton", MainFrame)
+disc.Text = "JOIN DISCORD"
+disc.Size = UDim2.new(0.9, 0, 0, 40)
+disc.Position = UDim2.new(0.05, 0, 0.54, 0)
+disc.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+disc.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", disc)
+disc.MouseButton1Click:Connect(function() setclipboard("https://discord.gg/yz5yADqe") end)
+
+-- // Close Button
 local close = Instance.new("TextButton", MainFrame)
 close.Text = "CLOSE HUB"
 close.Size = UDim2.new(0.9, 0, 0, 40)
 close.Position = UDim2.new(0.05, 0, 0.88, 0)
 close.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
 close.TextColor3 = Color3.new(1,1,1)
-close.Font = Enum.Font.GothamBold
 Instance.new("UICorner", close)
 close.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
