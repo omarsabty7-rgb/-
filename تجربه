@@ -1,5 +1,5 @@
 -- // 1. إعدادات نظام المفاتيح //
-local CorrectKey = "ELITE-KEY-2026" -- هذا هو المفتاح الذي يجب إدخاله
+local CorrectKey = "ELITE-KEY-2026" 
 local DiscordLink = "https://discord.gg/yz5yADqe"
 
 local KeyGui = Instance.new("ScreenGui")
@@ -9,7 +9,6 @@ local KeyInput = Instance.new("TextBox")
 local SubmitBtn = Instance.new("TextButton")
 local GetKeyBtn = Instance.new("TextButton")
 
--- إعداد واجهة المفتاح (Key UI)
 KeyGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 KeyFrame.Name = "KeyFrame"
 KeyFrame.Parent = KeyGui
@@ -55,46 +54,33 @@ GetKeyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 GetKeyBtn.TextColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", GetKeyBtn)
 
--- // 2. وظيفة تحميل السكريبت الخاص بك (Main Script) //
+-- // 2. وظيفة تحميل السكريبت الأساسي //
 local function loadMainHub()
-    -- [ هنا تم دمج السكريبت الخاص بك بالكامل ]
     local ScreenGui = Instance.new("ScreenGui")
     local MainFrame = Instance.new("Frame")
-    local UICorner = Instance.new("UICorner")
-    local Title = Instance.new("TextLabel")
     local RunService = game:GetService("RunService")
     local UserInputService = game:GetService("UserInputService")
+    local LocalPlayer = game.Players.LocalPlayer
 
-    local AimbotEnabled = false
-    local Flying = false
-    local SpeedEnabled = false
-    local JumpEnabled = false
-    local NoclipEnabled = false
-    local ESPEnabled = false
+    -- القيم الافتراضية
+    local AimbotEnabled, Flying, SpeedEnabled, JumpEnabled = false, false, false, false
+    local ESPEnabled, GodModeEnabled, NoRecoilEnabled = false, false, false
+    local WalkSpeedValue, JumpPowerValue, FlySpeedValue, SmoothnessValue = 100, 150, 100, 0.1
 
-    local WalkSpeedValue = 100
-    local JumpPowerValue = 150
-    local FlySpeedValue = 100
-    local SmoothnessValue = 0.1 -- جعلناه أسرع قليلاً
-
-    ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-    ScreenGui.ResetOnSpawn = false
-
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
     MainFrame.Name = "MainFrame"
     MainFrame.Parent = ScreenGui
-    MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
     MainFrame.Position = UDim2.new(0.1, 0, 0.1, 0)
-    MainFrame.Size = UDim2.new(0, 280, 0, 540) 
-    MainFrame.Active = true
-    MainFrame.Draggable = true
+    MainFrame.Size = UDim2.new(0, 280, 0, 620) -- تم زيادة الحجم للإضافات الجديدة
+    MainFrame.Active, MainFrame.Draggable = true, true
     Instance.new("UICorner", MainFrame)
 
-    Title.Parent = MainFrame
-    Title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    local Title = Instance.new("TextLabel", MainFrame)
     Title.Size = UDim2.new(1, 0, 0, 40)
-    Title.Text = "ELITE HUB V7 | ACCESS GRANTED"
-    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Title.TextSize = 16
+    Title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    Title.Text = "ELITE HUB V7 | GOD MODE + RECOIL"
+    Title.TextColor3 = Color3.new(1, 1, 1)
     Instance.new("UICorner", Title)
 
     local function CreateToggleButton(name, pos, callback, isFullWidth)
@@ -102,12 +88,10 @@ local function loadMainHub()
         local btn = Instance.new("TextButton", MainFrame)
         btn.Text = name .. ": [OFF]"
         btn.Position = pos
-        btn.Size = isFullWidth and UDim2.new(0.9, 0, 0, 35) or UDim2.new(0.6, 0, 0, 35)
+        btn.Size = isFullWidth and UDim2.new(0.9, 0, 0, 32) or UDim2.new(0.6, 0, 0, 32)
         btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
         btn.TextColor3 = Color3.new(1,1,1)
-        btn.Font = Enum.Font.SourceSansBold
         Instance.new("UICorner", btn)
-
         btn.MouseButton1Click:Connect(function()
             active = not active
             btn.Text = active and name .. ": [ON]" or name .. ": [OFF]"
@@ -120,24 +104,23 @@ local function loadMainHub()
         local input = Instance.new("TextBox", MainFrame)
         input.Text = tostring(defaultValue)
         input.Position = pos
-        input.Size = UDim2.new(0.2, 0, 0, 35)
+        input.Size = UDim2.new(0.2, 0, 0, 32)
         input.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
         input.TextColor3 = Color3.fromRGB(0, 255, 0)
         Instance.new("UICorner", input)
         input.FocusLost:Connect(function() callback(tonumber(input.Text) or defaultValue) end)
     end
 
-    -- Controls
-    CreateToggleButton("SPEED", UDim2.new(0.05, 0, 0.12, 0), function(s) SpeedEnabled = s end)
-    CreateValueInput(UDim2.new(0.7, 0, 0.12, 0), WalkSpeedValue, function(v) WalkSpeedValue = v end)
+    -- الأزرار
+    CreateToggleButton("SPEED", UDim2.new(0.05, 0, 0.08, 0), function(s) SpeedEnabled = s end)
+    CreateValueInput(UDim2.new(0.7, 0, 0.08, 0), WalkSpeedValue, function(v) WalkSpeedValue = v end)
 
-    CreateToggleButton("JUMP", UDim2.new(0.05, 0, 0.22, 0), function(s) JumpEnabled = s end)
-    CreateValueInput(UDim2.new(0.7, 0, 0.22, 0), JumpPowerValue, function(v) JumpPowerValue = v end)
+    CreateToggleButton("JUMP", UDim2.new(0.05, 0, 0.15, 0), function(s) JumpEnabled = s end)
+    CreateValueInput(UDim2.new(0.7, 0, 0.15, 0), JumpPowerValue, function(v) JumpPowerValue = v end)
 
-    CreateToggleButton("FLY (Space/Shift)", UDim2.new(0.05, 0, 0.32, 0), function(s)
+    CreateToggleButton("FLY (Space/Shift)", UDim2.new(0.05, 0, 0.22, 0), function(s)
         Flying = s
-        NoclipEnabled = s
-        local root = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         if Flying and root then
             local bv = Instance.new("BodyVelocity", root)
             bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
@@ -158,33 +141,49 @@ local function loadMainHub()
             end)
         end
     end)
-    CreateValueInput(UDim2.new(0.7, 0, 0.32, 0), FlySpeedValue, function(v) FlySpeedValue = v end)
+    CreateValueInput(UDim2.new(0.7, 0, 0.22, 0), FlySpeedValue, function(v) FlySpeedValue = v end)
 
-    CreateToggleButton("AIMBOT (ENEMIES)", UDim2.new(0.05, 0, 0.42, 0), function(s) AimbotEnabled = s end)
-    CreateValueInput(UDim2.new(0.7, 0, 0.42, 0), SmoothnessValue, function(v) SmoothnessValue = v end)
+    CreateToggleButton("AIMBOT (ENEMIES)", UDim2.new(0.05, 0, 0.29, 0), function(s) AimbotEnabled = s end)
+    CreateValueInput(UDim2.new(0.7, 0, 0.29, 0), SmoothnessValue, function(v) SmoothnessValue = v end)
 
-    CreateToggleButton("SMART ESP", UDim2.new(0.05, 0, 0.52, 0), function(s) ESPEnabled = s end, true)
+    CreateToggleButton("GOD MODE", UDim2.new(0.05, 0, 0.36, 0), function(s) 
+        GodModeEnabled = s 
+        if s then
+            -- ميزة الـ God Mode البسيطة (إلغاء تدمير الشخصية عند الموت)
+            LocalPlayer.Character.Humanoid.Name = "EliteHumanoid" -- بعض الألعاب لا تتعرف على الاسم المختلف فلا تقتل اللاعب
+        else
+            LocalPlayer.Character.Humanoid.Name = "Humanoid"
+        end
+    end, true)
 
-    -- Loops (ESP & Physics)
-    RunService.Stepped:Connect(function()
-        for _, p in pairs(game.Players:GetPlayers()) do
-            if p ~= game.Players.LocalPlayer and p.Character then
-                local h = p.Character:FindFirstChild("ESPHighlight")
-                if ESPEnabled then
-                    if not h then h = Instance.new("Highlight", p.Character); h.Name = "ESPHighlight" end
-                    h.FillColor = (p.Team == game.Players.LocalPlayer.Team) and Color3.new(0,0,1) or Color3.new(1,0,0)
-                elseif h then h:Destroy() end
+    CreateToggleButton("NO RECOIL", UDim2.new(0.05, 0, 0.43, 0), function(s) NoRecoilEnabled = s end, true)
+    CreateToggleButton("SMART ESP", UDim2.new(0.05, 0, 0.50, 0), function(s) ESPEnabled = s end, true)
+
+    -- // وظيفة No Recoil //
+    task.spawn(function()
+        while task.wait(0.5) do
+            if NoRecoilEnabled then
+                pcall(function()
+                    for _, v in pairs(LocalPlayer.Backpack:GetChildren()) do
+                        if v:IsA("Tool") and v:FindFirstChild("Stats") then -- تعديل القيم إذا كانت موجودة
+                            for _, stat in pairs(v.Stats:GetChildren()) do
+                                if stat.Name:find("Recoil") or stat.Name:find("Spread") then stat.Value = 0 end
+                            end
+                        end
+                    end
+                end)
             end
         end
     end)
 
+    -- // الحلقات البرمجية //
     RunService.Heartbeat:Connect(function()
-        local char = game.Players.LocalPlayer.Character
+        local char = LocalPlayer.Character
         if char and char:FindFirstChild("Humanoid") then
             if SpeedEnabled then char.Humanoid.WalkSpeed = WalkSpeedValue end
             if JumpEnabled then char.Humanoid.JumpPower = JumpPowerValue char.Humanoid.UseJumpPower = true end
-            if NoclipEnabled then
-                for _, part in pairs(char:GetDescendants()) do if part:IsA("BasePart") then part.CanCollide = false end end
+            if GodModeEnabled and char.Humanoid.Health > 0 and char.Humanoid.Health < 20 then
+                char.Humanoid.Health = 100 -- محاولة استرجاع الصحة تلقائياً
             end
         end
     end)
@@ -193,8 +192,8 @@ local function loadMainHub()
         if AimbotEnabled then
             local target, dist = nil, 1000
             for _, p in pairs(game.Players:GetPlayers()) do
-                if p ~= game.Players.LocalPlayer and p.Team ~= game.Players.LocalPlayer.Team and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                    local d = (p.Character.HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                if p ~= LocalPlayer and p.Team ~= LocalPlayer.Team and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    local d = (p.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
                     if d < dist then target = p dist = d end
                 end
             end
@@ -204,17 +203,27 @@ local function loadMainHub()
         end
     end)
 
+    -- زر الديسكورد المدمج في الهب
+    local dsc = Instance.new("TextButton", MainFrame)
+    dsc.Text = "COPY DISCORD"
+    dsc.Position = UDim2.new(0.05, 0, 0.75, 0)
+    dsc.Size = UDim2.new(0.9, 0, 0, 35)
+    dsc.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+    dsc.TextColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", dsc)
+    dsc.MouseButton1Click:Connect(function() setclipboard(DiscordLink) end)
+
     local close = Instance.new("TextButton", MainFrame)
     close.Text = "CLOSE HUB"
-    close.Size = UDim2.new(0.9, 0, 0, 40)
     close.Position = UDim2.new(0.05, 0, 0.88, 0)
+    close.Size = UDim2.new(0.9, 0, 0, 35)
     close.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
     close.TextColor3 = Color3.new(1,1,1)
     Instance.new("UICorner", close)
     close.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 end
 
--- // 3. برمجة أزرار التحقق //
+-- // 3. برمجة نظام المفاتيح //
 GetKeyBtn.MouseButton1Click:Connect(function()
     setclipboard(DiscordLink)
     GetKeyBtn.Text = "LINK COPIED!"
@@ -228,9 +237,9 @@ SubmitBtn.MouseButton1Click:Connect(function()
         SubmitBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
         task.wait(1)
         KeyGui:Destroy()
-        loadMainHub() -- تشغيل السكريبت الخاص بك
+        loadMainHub()
     else
-        SubmitBtn.Text = "INVALID KEY!"
+        SubmitBtn.Text = "WRONG KEY!"
         SubmitBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
         task.wait(2)
         SubmitBtn.Text = "SUBMIT"
