@@ -1,4 +1,4 @@
--- // إعدادات نظام المفاتيح //
+-- // 1. نظام المفاتيح (Key System) //
 local CorrectKey = "ELITE-KEY-2026" 
 local DiscordLink = "https://discord.gg/yz5yADqe"
 
@@ -17,7 +17,7 @@ KeyFrame.Draggable = true
 Instance.new("UICorner", KeyFrame)
 
 KeyInput.Parent = KeyFrame
-KeyInput.PlaceholderText = "Enter Key Here..."
+KeyInput.PlaceholderText = "Enter Key..."
 KeyInput.Position = UDim2.new(0.1, 0, 0.3, 0)
 KeyInput.Size = UDim2.new(0.8, 0, 0, 35)
 KeyInput.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -40,7 +40,7 @@ GetKeyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 GetKeyBtn.TextColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", GetKeyBtn)
 
--- // وظيفة تحميل السكريبت الأساسي المطور //
+-- // 2. السكريبت الأساسي المدمج (Your Main Script) //
 local function loadMainHub()
     local ScreenGui = Instance.new("ScreenGui")
     local MainFrame = Instance.new("Frame")
@@ -48,7 +48,7 @@ local function loadMainHub()
     local UserInputService = game:GetService("UserInputService")
     local LocalPlayer = game.Players.LocalPlayer
 
-    -- القيم الافتراضية
+    -- القيم الافتراضية (من السكريبت الخاص بك)
     local AimbotEnabled, Flying, SpeedEnabled, JumpEnabled = false, false, false, false
     local ESPEnabled, GodModeEnabled, NoRecoilEnabled = false, false, false
     local WalkSpeedValue, JumpPowerValue, FlySpeedValue, SmoothnessValue = 100, 150, 100, 0.1
@@ -89,14 +89,14 @@ local function loadMainHub()
         input.FocusLost:Connect(function() callback(tonumber(input.Text) or defaultValue) end)
     end
 
-    -- الأزرار الأساسية
-    CreateToggleButton("SPEED", UDim2.new(0.05, 0, 0.08, 0), function(s) SpeedEnabled = s end)
-    CreateValueInput(UDim2.new(0.7, 0, 0.08, 0), WalkSpeedValue, function(v) WalkSpeedValue = v end)
+    -- أزرار التحكم (WASD + Space/Shift للطيران)
+    CreateToggleButton("SPEED", UDim2.new(0.05, 0, 0.1, 0), function(s) SpeedEnabled = s end)
+    CreateValueInput(UDim2.new(0.7, 0, 0.1, 0), WalkSpeedValue, function(v) WalkSpeedValue = v end)
 
-    CreateToggleButton("JUMP", UDim2.new(0.05, 0, 0.15, 0), function(s) JumpEnabled = s end)
-    CreateValueInput(UDim2.new(0.7, 0, 0.15, 0), JumpPowerValue, function(v) JumpPowerValue = v end)
+    CreateToggleButton("JUMP", UDim2.new(0.05, 0, 0.18, 0), function(s) JumpEnabled = s end)
+    CreateValueInput(UDim2.new(0.7, 0, 0.18, 0), JumpPowerValue, function(v) JumpPowerValue = v end)
 
-    CreateToggleButton("FLY (Space/Shift)", UDim2.new(0.05, 0, 0.22, 0), function(s)
+    CreateToggleButton("FLY (Space/Shift)", UDim2.new(0.05, 0, 0.26, 0), function(s)
         Flying = s
         local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         if Flying and root then
@@ -105,82 +105,73 @@ local function loadMainHub()
             task.spawn(function()
                 while Flying do
                     local cam = workspace.CurrentCamera.CFrame
-                    local newVel = Vector3.new(0,0,0)
-                    if UserInputService:IsKeyDown(Enum.KeyCode.W) then newVel = newVel + cam.LookVector end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.S) then newVel = newVel - cam.LookVector end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.D) then newVel = newVel + cam.RightVector end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.A) then newVel = newVel - cam.RightVector end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.Space) then newVel = newVel + Vector3.new(0,1,0) end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then newVel = newVel - Vector3.new(0,1,0) end
-                    bv.Velocity = newVel * FlySpeedValue
+                    local move = Vector3.new(0,0,0)
+                    if UserInputService:IsKeyDown(Enum.KeyCode.W) then move = move + cam.LookVector end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.S) then move = move - cam.LookVector end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.D) then move = move + cam.RightVector end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.A) then move = move - cam.RightVector end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.Space) then move = move + Vector3.new(0,1,0) end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then move = move - Vector3.new(0,1,0) end
+                    bv.Velocity = move * FlySpeedValue
                     task.wait()
                 end
                 bv:Destroy()
             end)
         end
     end)
-    CreateValueInput(UDim2.new(0.7, 0, 0.22, 0), FlySpeedValue, function(v) FlySpeedValue = v end)
+    CreateValueInput(UDim2.new(0.7, 0, 0.26, 0), FlySpeedValue, function(v) FlySpeedValue = v end)
 
-    CreateToggleButton("AIMBOT (ENEMIES)", UDim2.new(0.05, 0, 0.29, 0), function(s) AimbotEnabled = s end)
-    CreateValueInput(UDim2.new(0.7, 0, 0.29, 0), SmoothnessValue, function(v) SmoothnessValue = v end)
+    CreateToggleButton("AIMBOT (ENEMIES)", UDim2.new(0.05, 0, 0.34, 0), function(s) AimbotEnabled = s end)
+    CreateValueInput(UDim2.new(0.7, 0, 0.34, 0), SmoothnessValue, function(v) SmoothnessValue = v end)
 
-    -- // تحسين God Mode //
-    CreateToggleButton("GOD MODE (BETA)", UDim2.new(0.05, 0, 0.36, 0), function(s) 
+    -- إصلاح God Mode (Anti-Death)
+    CreateToggleButton("GOD MODE", UDim2.new(0.05, 0, 0.42, 0), function(s) 
         GodModeEnabled = s 
         if s then
-            local char = LocalPlayer.Character
-            if char and char:FindFirstChild("Humanoid") then
-                char.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
-            end
+            LocalPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+        else
+            LocalPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, true)
         end
     end, true)
 
-    -- // تحسين No Recoil //
-    CreateToggleButton("NO RECOIL", UDim2.new(0.05, 0, 0.43, 0), function(s) 
+    -- إصلاح No Recoil (Universal Scan)
+    CreateToggleButton("NO RECOIL", UDim2.new(0.05, 0, 0.50, 0), function(s) 
         NoRecoilEnabled = s
         task.spawn(function()
             while NoRecoilEnabled do
-                pcall(function()
-                    for _, v in pairs(game:GetDescendants()) do
-                        if v:IsA("ValueBase") and (v.Name:find("Recoil") or v.Name:find("Spread")) then
-                            v.Value = 0
-                        end
+                for _, v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+                    if v:IsA("ValueBase") and (v.Name:find("Recoil") or v.Name:find("Spread")) then
+                        v.Value = 0
                     end
-                end)
+                end
                 task.wait(1)
             end
         end)
     end, true)
 
-    -- // إصلاح الـ ESP (بدون شاشة بيضاء) //
-    CreateToggleButton("SMART ESP", UDim2.new(0.05, 0, 0.50, 0), function(s) 
-        ESPEnabled = s 
-        if not s then
-            for _, p in pairs(game.Players:GetPlayers()) do
-                if p.Character and p.Character:FindFirstChild("ESPHightlight") then
-                    p.Character.ESPHightlight:Destroy()
-                end
-            end
-        end
-    end, true)
+    -- إصلاح ESP (نظام المربعات الآمن)
+    CreateToggleButton("SMART ESP", UDim2.new(0.05, 0, 0.58, 0), function(s) ESPEnabled = s end, true)
 
     RunService.RenderStepped:Connect(function()
         if ESPEnabled then
             for _, p in pairs(game.Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                    local h = p.Character:FindFirstChild("ESPHightlight")
+                if p ~= LocalPlayer and p.Character then
+                    local h = p.Character:FindFirstChild("EliteESP")
                     if not h then
-                        h = Instance.new("Highlight")
-                        h.Name = "ESPHightlight"
-                        h.Parent = p.Character
-                        h.Adornee = p.Character
+                        h = Instance.new("Highlight", p.Character)
+                        h.Name = "EliteESP"
                         h.FillTransparency = 0.5
+                        h.OutlineTransparency = 0
                     end
                     h.FillColor = (p.Team == LocalPlayer.Team) and Color3.new(0,0,1) or Color3.new(1,0,0)
                 end
             end
+        else
+            for _, p in pairs(game.Players:GetPlayers()) do
+                if p.Character and p.Character:FindFirstChild("EliteESP") then p.Character.EliteESP:Destroy() end
+            end
         end
-        -- Aimbot
+
         if AimbotEnabled then
             local target, dist = nil, 1000
             for _, p in pairs(game.Players:GetPlayers()) do
@@ -204,13 +195,13 @@ local function loadMainHub()
     end)
 end
 
--- // منطق أزرار التحقق //
+-- // 3. منطق تشغيل الأزرار //
 SubmitBtn.MouseButton1Click:Connect(function()
     if KeyInput.Text == CorrectKey then
         KeyGui:Destroy()
         loadMainHub()
     else
-        SubmitBtn.Text = "WRONG!"
+        SubmitBtn.Text = "WRONG KEY"
         task.wait(1)
         SubmitBtn.Text = "SUBMIT"
     end
