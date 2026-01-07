@@ -13,15 +13,15 @@ local AimbotEnabled = false
 local Flying = false
 local SpeedEnabled = false
 local JumpEnabled = false
-local NoclipEnabled = false
 local ESPEnabled = false
+local AutoClickEnabled = false
 
 local WalkSpeedValue = 100
 local JumpPowerValue = 150
 local FlySpeedValue = 100
 local SmoothnessValue = 0.1
 
--- // إعداد الواجهة (UI Setup)
+-- // إعداد الواجهة
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
@@ -29,7 +29,7 @@ MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 MainFrame.Position = UDim2.new(0.5, -140, 0.5, -270)
-MainFrame.Size = UDim2.new(0, 280, 0, 540) 
+MainFrame.Size = UDim2.new(0, 280, 0, 560) -- زيادة الحجم قليلاً للـ Auto Clicker
 MainFrame.Active = true
 MainFrame.Draggable = true
 
@@ -41,14 +41,14 @@ UIStroke.Thickness = 1.5
 Title.Parent = MainFrame
 Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 Title.Size = UDim2.new(1, 0, 0, 45)
-Title.Text = "  ELITE HUB V7 | TEAM CHECK"
+Title.Text = "  ELITE HUB V7 | ANTI-FRIEND AIM"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 14
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Instance.new("UICorner", Title)
 
--- // وظائف الإنشاء (Toggle & Input)
+-- // وظائف الإنشاء
 local function CreateToggleButton(name, pos, callback, isFullWidth)
     local active = false
     local btn = Instance.new("TextButton", MainFrame)
@@ -80,16 +80,15 @@ local function CreateValueInput(pos, defaultValue, callback)
 end
 
 -- // أزرار التحكم
-CreateToggleButton("WALK SPEED", UDim2.new(0.05, 0, 0.12, 0), function(s) SpeedEnabled = s end)
-CreateValueInput(UDim2.new(0.71, 0, 0.12, 0), WalkSpeedValue, function(v) WalkSpeedValue = v end)
+CreateToggleButton("WALK SPEED", UDim2.new(0.05, 0, 0.10, 0), function(s) SpeedEnabled = s end)
+CreateValueInput(UDim2.new(0.71, 0, 0.10, 0), WalkSpeedValue, function(v) WalkSpeedValue = v end)
 
-CreateToggleButton("JUMP POWER", UDim2.new(0.05, 0, 0.20, 0), function(s) JumpEnabled = s end)
-CreateValueInput(UDim2.new(0.71, 0, 0.20, 0), JumpPowerValue, function(v) JumpPowerValue = v end)
+CreateToggleButton("JUMP POWER", UDim2.new(0.05, 0, 0.18, 0), function(s) JumpEnabled = s end)
+CreateValueInput(UDim2.new(0.71, 0, 0.18, 0), JumpPowerValue, function(v) JumpPowerValue = v end)
 
-CreateToggleButton("FLY HACK", UDim2.new(0.05, 0, 0.28, 0), function(s) 
+CreateToggleButton("FLY HACK", UDim2.new(0.05, 0, 0.26, 0), function(s) 
     Flying = s 
-    NoclipEnabled = s 
-    local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if s and root then
         local bv = Instance.new("BodyVelocity", root)
         bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
@@ -108,21 +107,24 @@ CreateToggleButton("FLY HACK", UDim2.new(0.05, 0, 0.28, 0), function(s)
         end)
     end
 end)
-CreateValueInput(UDim2.new(0.71, 0, 0.28, 0), FlySpeedValue, function(v) FlySpeedValue = v end)
+CreateValueInput(UDim2.new(0.71, 0, 0.26, 0), FlySpeedValue, function(v) FlySpeedValue = v end)
 
-CreateToggleButton("AIMBOT (ENEMIES)", UDim2.new(0.05, 0, 0.36, 0), function(s) AimbotEnabled = s end)
-CreateValueInput(UDim2.new(0.71, 0, 0.36, 0), SmoothnessValue, function(v) SmoothnessValue = v end)
+CreateToggleButton("AIMBOT (ENEMIES)", UDim2.new(0.05, 0, 0.34, 0), function(s) AimbotEnabled = s end)
+CreateValueInput(UDim2.new(0.71, 0, 0.34, 0), SmoothnessValue, function(v) SmoothnessValue = v end)
 
-CreateToggleButton("SMART ESP", UDim2.new(0.05, 0, 0.44, 0), function(s) ESPEnabled = s end, true)
+CreateToggleButton("AUTO CLICKER", UDim2.new(0.05, 0, 0.42, 0), function(s) AutoClickEnabled = s end, true)
+CreateToggleButton("SMART ESP", UDim2.new(0.05, 0, 0.50, 0), function(s) ESPEnabled = s end, true)
 
--- // Aimbot Logic (With Team Check)
+-- // Aimbot Logic (إصلاح نظام الأعداء)
 RunService.RenderStepped:Connect(function()
     if AimbotEnabled then
         local target, closest = nil, 1000
         for _, p in pairs(Players:GetPlayers()) do
-            -- فحص: ليس أنا + لديه شخصية + ليس في فريقي (الأعداء فقط)
             if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                if p.Team ~= LocalPlayer.Team then 
+                -- فحص الفريق: إذا كان الفريق مختلفاً أو إذا لم يكن هناك نظام فرق أصلاً
+                local isEnemy = (p.Team ~= LocalPlayer.Team) or (tostring(p.Team) ~= tostring(LocalPlayer.Team))
+                
+                if isEnemy then
                     local pos, vis = workspace.CurrentCamera:WorldToViewportPoint(p.Character.HumanoidRootPart.Position)
                     if vis then
                         local mag = (Vector2.new(pos.X, pos.Y) - UserInputService:GetMouseLocation()).Magnitude
@@ -137,7 +139,19 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- // ESP & Physics Loops
+-- // Auto Clicker Logic
+task.spawn(function()
+    while true do
+        task.wait(0.01)
+        if AutoClickEnabled then
+            local vu = game:GetService("VirtualUser")
+            vu:CaptureController()
+            vu:ClickButton1(Vector2.new(0,0))
+        end
+    end
+end)
+
+-- // ESP Logic
 RunService.Stepped:Connect(function()
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= LocalPlayer and p.Character then
@@ -150,6 +164,7 @@ RunService.Stepped:Connect(function()
     end
 end)
 
+-- // Speed & Jump
 RunService.Heartbeat:Connect(function()
     local Hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
     if Hum then
@@ -162,7 +177,7 @@ end)
 local disc = Instance.new("TextButton", MainFrame)
 disc.Text = "JOIN DISCORD"
 disc.Size = UDim2.new(0.9, 0, 0, 40)
-disc.Position = UDim2.new(0.05, 0, 0.54, 0)
+disc.Position = UDim2.new(0.05, 0, 0.60, 0)
 disc.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
 disc.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", disc)
@@ -172,7 +187,7 @@ disc.MouseButton1Click:Connect(function() setclipboard("https://discord.gg/yz5yA
 local close = Instance.new("TextButton", MainFrame)
 close.Text = "CLOSE HUB"
 close.Size = UDim2.new(0.9, 0, 0, 40)
-close.Position = UDim2.new(0.05, 0, 0.88, 0)
+close.Position = UDim2.new(0.05, 0, 0.90, 0)
 close.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
 close.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", close)
